@@ -1,0 +1,18 @@
+{
+  "name": "rustfs",
+  "version": "0.1.0",
+  "entry": "./src/index.ts",
+  "sdk": "^1.0.0",
+  "target": "js",
+  "description": "RustFS fleet view: health, buckets and replication state (target online/offline, downtime, queue, failures) for every configured RustFS server, plus `who` — which agent session set up a local RustFS, from where, and when (via relic).",
+  "author": "nexus-oracle",
+  "cli": {
+    "command": "rustfs",
+    "help": "maw rustfs <targets|status [NAME]|buckets NAME|repl NAME [BUCKET]|who [PORT]> [--json] — read-only. Targets come from ~/.config/maw-rustfs/targets.json; keys are read from pass or env, never printed."
+  },
+  "capabilities": ["net:fetch", "proc:exec:curl", "proc:exec:pass", "proc:exec:lsof", "proc:exec:launchctl", "proc:exec:relic"],
+  "weight": 0,
+  "tier": "extra",
+  "license": "MIT",
+  "schemaVersion": 1
+}

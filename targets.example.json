@@ -1,0 +1,13 @@
+{
+  "local": {
+    "endpoint": "http://127.0.0.1:9000",
+    "console": "http://127.0.0.1:9001/rustfs/console/",
+    "accessKey": { "pass": "local/rustfs-access-key" },
+    "secretKey": { "pass": "local/rustfs-secret-key" }
+  },
+  "replica": {
+    "endpoint": "http://replica.lan:9000",
+    "accessKey": { "env": "REPLICA_AK" },
+    "secretKey": { "env": "REPLICA_SK" }
+  }
+}
