@@ -1,5 +1,7 @@
 # maw-rustfs
 
+[ภาษาไทย → README.th.md](README.th.md)
+
 A read-only [maw](https://github.com/Soul-Brews-Studio/maw-js) plugin for people who run
 more than one [RustFS](https://github.com/rustfs/rustfs) server and replicate between them.
 It answers three questions from the terminal:
@@ -124,6 +126,23 @@ bucket is versioned on both sides. The rule was created with `rc bucket replicat
 | Delete on the replica only | the source still has the object; the replica shows a delete marker |
 | **Two-way** (a second rule replica → source) | new objects on either side appeared on both within 5 s; each side marks the other's copy `REPLICA`; no replication loop (1 version) |
 | **Conflict**: both sides write the same key while disconnected (source first, replica 5 s later) | after reconnect, both served the **later write**. Both versions kept on both sides; the earlier one is non-latest |
+
+### Accidental delete on the source — does the replica survive?
+
+Two fresh buckets with 5 × 100 KB files each, replicated one-way. `vault-del` has the rule
+`--replicate delete,delete-marker,existing-objects`. `vault-keep` has `--replicate existing-objects`.
+
+| Accident on the source | Rule replicates deletes (`vault-del`) | Rule does not (`vault-keep`) |
+|---|---|---|
+| Normal delete (creates a delete marker) | replica hides it too (404); the data is still there. Removing the marker on the replica brought it back byte-identical | replica still serves it (200) |
+| **Permanent delete** (`DELETE ?versionId=`) | **gone from the replica too**: 0 versions left on either side | replica still has it |
+| **Bucket force-delete** (`rc bucket remove --force`) | **replica emptied too**: 0 versions, 0 markers on both sides. The command itself ended with `Concurrent writes left objects…` and the bucket stayed, but its contents were already purged on both sides | source bucket gone; **replica kept all 5 versions** |
+| Source disk lost (data dir wiped, server restarted empty) | – | replica untouched; `rc mirror black/vault-keep m5/vault-keep` restored it in 0.99 s, 5/5 byte-identical, including 2 files deleted on the source earlier |
+
+**Replication with delete replication is a mirror, not a backup.** An accident on the source
+reaches the replica within seconds. A normal delete can be undone through versioning; a
+permanent delete or a bucket force-delete cannot. For a backup target, leave `delete` and
+`delete-marker` off. `rc mirror` restores only the latest version of each object.
 
 Setup gotchas found on the way:
 - A loopback target (`127.0.0.1`) is refused with `outbound URL host '127.0.0.1' is not allowed: loopback address`
